@@ -25,6 +25,8 @@ provider:
   runtime: nodejs18.x
   stage: dev
   region: eu-central-1
+  httpApi:
+    cors: true
 
 # you can add statements to the Lambda function's IAM Role here
 #  iam:
@@ -57,8 +59,21 @@ provider:
 #    - include-me-dir/**
 
 functions:
-  hello:
-    handler: handler.hello
+  getProductsList:
+    handler: handler.getProductsList
+    events:
+      - httpApi:
+          path: /products
+          method: get
+  getProductsById:
+    handler: handler.getProductsById
+    events:
+      - httpApi:
+          path: /products/{productId}
+          method: get
+
+#  hello:
+#    handler: handler.hello
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
