@@ -1,0 +1,15 @@
+{
+  "name": "product-service",
+  "version": "1.0.0",
+  "main": "dynamodb-fill.js",
+  "scripts": {
+    "dynamodb-fill": "node dynamodb-fill"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.540.0",
+    "@aws-sdk/util-dynamodb": "^3.549.0"
+  }
+}
