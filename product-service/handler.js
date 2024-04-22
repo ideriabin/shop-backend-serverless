@@ -3,9 +3,19 @@
 const { executeWithErrorHandler } = require('./helpers');
 const getProductsList = require('./getProductsList');
 const getProductsById = require('./getProductsById');
+const createProduct = require('./createProduct');
 
-module.exports.getProductsList = () =>
-  executeWithErrorHandler(() => getProductsList());
+exports.getProductsList = (event, context) => {
+  console.log('getProductsList', event, context);
+  return executeWithErrorHandler(() => getProductsList());
+};
 
-module.exports.getProductsById = (event) =>
-  executeWithErrorHandler(() => getProductsById(event.pathParameters.productId));
+exports.getProductsById = (event, context) => {
+  console.log('getProductsById', event, context);
+  return executeWithErrorHandler(() => getProductsById(event.pathParameters));
+};
+
+exports.createProduct = (event, context) => {
+  console.log('createProduct', event, context);
+  return executeWithErrorHandler(() => createProduct(event.pathParameters));
+};

@@ -27,6 +27,19 @@ provider:
   region: eu-central-1
   httpApi:
     cors: true
+  environment:
+    PRODUCTS_TABLE: products
+    STOCK_TABLE: stock
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:Scan"
+            - "dynamodb:GetItem"
+          Resource:
+            - "arn:aws:dynamodb:*:*:table/products"
+            - "arn:aws:dynamodb:*:*:table/stock"
 
 # you can add statements to the Lambda function's IAM Role here
 #  iam:
@@ -71,6 +84,12 @@ functions:
       - httpApi:
           path: /products/{productId}
           method: get
+  createProduct:
+    handler: handler.createProduct
+    events:
+      - httpApi:
+          path: /products
+          method: post
 
 #  hello:
 #    handler: handler.hello
@@ -125,3 +144,32 @@ functions:
 #     NewOutput:
 #       Description: "Description for the output"
 #       Value: "Some output value"
+
+resources:
+  Resources:
+    productsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: products
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    stockTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: stock
+        AttributeDefinitions:
+          - AttributeName: product_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: product_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
