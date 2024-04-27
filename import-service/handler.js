@@ -1,7 +1,8 @@
 'use strict';
 
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const csv = require('csv-parser');
 
 const s3 = new S3Client();
 
@@ -25,5 +26,22 @@ exports.importProductsFile = async (event) => {
     };
   } catch (err) {
     console.error(err);
+  }
+};
+
+
+exports.importFileParser = async (event) => {
+  console.log(JSON.stringify(event));
+
+  for await (const r of event.Records) {
+    const { bucket: { name }, object: { key } } = r.s3;
+    console.log({ name, key });
+
+    const object = await s3.send(new GetObjectCommand({
+      Bucket: name,
+      Key: key,
+    }));
+
+    object.Body.pipe(csv()).on('data', data => console.log(data));
   }
 };
