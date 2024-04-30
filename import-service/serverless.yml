@@ -16,13 +16,20 @@ provider:
     cors: true
   iam:
     role:
-     statements:
-      - Effect: Allow
-        Action: s3:PutObject
-        Resource: ${self:custom.bucketArn}
+      statements:
+        - Effect: Allow
+          Action: s3:PutObject
+          Resource: ${self:custom.bucketArn}
+        - Effect: Allow
+          Action: sqs:*
+          Resource:
+            Fn::ImportValue: CatalogItemsQueueArn
   environment:
     BUCKET_NAME: ${self:custom.bucketName}
     UPLOAD_DIR: ${self:custom.bucketPrefix}
+    QUEUE_URL:
+      Fn::ImportValue: CatalogItemsQueueUrl
+
 
 functions:
   importProductsFile:

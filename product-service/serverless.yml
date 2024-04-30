@@ -16,6 +16,8 @@ provider:
       Ref: productsTable
     STOCK_TABLE:
       Ref: stockTable
+    CATALOG_ITEMS_QUEUE:
+      Ref: catalogItemsQueue
 
   iam:
     role:
@@ -24,6 +26,7 @@ provider:
           Action:
             - "dynamodb:Scan"
             - "dynamodb:GetItem"
+            - "dynamodb:PutItem"
           Resource:
             - Fn::GetAtt: [productsTable, Arn]
             - Fn::GetAtt: [stockTable, Arn]
@@ -47,6 +50,13 @@ functions:
       - httpApi:
           path: /products
           method: post
+  catalogBatchProcess:
+    handler: handler.catalogBatchProcess
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt: [catalogItemsQueue, Arn]
+          batchSize: 5
 
 resources:
   Resources:
@@ -76,3 +86,19 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+    catalogItemsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: catalogItems
+
+  Outputs:
+    CatalogItemsQueueArn:
+      Value:
+        Fn::GetAtt: [catalogItemsQueue, Arn]
+      Export:
+        Name: CatalogItemsQueueArn
+    CatalogItemsQueueUrl:
+      Value:
+        Fn::GetAtt: [catalogItemsQueue, QueueUrl]
+      Export:
+        Name: CatalogItemsQueueUrl

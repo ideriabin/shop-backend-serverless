@@ -2,9 +2,11 @@
 
 const { S3Client, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
 const csv = require('csv-parser');
 
 const s3 = new S3Client();
+const sqs = new SQSClient();
 
 exports.importProductsFile = async (event) => {
   console.log({ event });
@@ -33,15 +35,25 @@ exports.importProductsFile = async (event) => {
 exports.importFileParser = async (event) => {
   console.log(JSON.stringify(event));
 
-  for await (const r of event.Records) {
-    const { bucket: { name }, object: { key } } = r.s3;
-    console.log({ name, key });
+  try {
+    for (const record of event.Records) {
+      const { bucket: { name }, object: { key } } = record.s3;
+      console.log({ name, key });
 
-    const object = await s3.send(new GetObjectCommand({
-      Bucket: name,
-      Key: key,
-    }));
+      const object = await s3.send(new GetObjectCommand({
+        Bucket: name,
+        Key: key,
+      }));
 
-    object.Body.pipe(csv()).on('data', data => console.log(data));
+      for await (const data of object.Body.pipe(csv())) {
+        console.log(data);
+        await sqs.send(new SendMessageCommand({
+          QueueUrl: process.env.QUEUE_URL,
+          MessageBody: JSON.stringify(data),
+        }))
+      }
+    }
+  } catch (err) {
+    console.log(err);
   }
 };

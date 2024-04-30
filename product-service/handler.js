@@ -4,6 +4,7 @@ const { executeWithErrorHandler } = require('./helpers');
 const getProductsList = require('./getProductsList');
 const getProductsById = require('./getProductsById');
 const createProduct = require('./createProduct');
+const catalogBatchProcess = require('./catalogBatchProcess');
 
 exports.getProductsList = (event, context) => {
   console.log('getProductsList', event, context);
@@ -17,5 +18,10 @@ exports.getProductsById = (event, context) => {
 
 exports.createProduct = (event, context) => {
   console.log('createProduct', event, context);
-  return executeWithErrorHandler(() => createProduct(event.pathParameters));
+  return executeWithErrorHandler(() => createProduct(JSON.parse(event.body)));
+};
+
+exports.catalogBatchProcess = (event, context) => {
+  console.log('catalogBatchProcess', event, context);
+  return executeWithErrorHandler(() => catalogBatchProcess(event.Records));
 };
