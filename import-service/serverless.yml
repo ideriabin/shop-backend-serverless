@@ -1,0 +1,42 @@
+service: import-service
+
+frameworkVersion: "3"
+
+custom:
+  bucketName: shop-backend-serverless-import
+  bucketArn: arn:aws:s3:::${self:custom.bucketName}
+  bucketPrefix: uploaded
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  region: eu-central-1
+  httpApi:
+    cors: true
+  iam:
+    role:
+     statements:
+      - Effect: Allow
+        Action: s3:PutObject
+        Resource: ${self:custom.bucketArn}
+  environment:
+    BUCKET_NAME: ${self:custom.bucketName}
+    UPLOAD_DIR: ${self:custom.bucketPrefix}
+
+functions:
+  importProductsFile:
+    handler: handler.importProductsFile
+    events:
+      - httpApi:
+          path: /import
+          method: get
+  importFileParser:
+    handler: handler.importFileParser
+    events:
+      - s3:
+          bucket: ${self:custom.bucketName}
+          existing: true
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: "${self:custom.bucketPrefix}/"
