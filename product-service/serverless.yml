@@ -18,6 +18,8 @@ provider:
       Ref: stockTable
     CATALOG_ITEMS_QUEUE:
       Ref: catalogItemsQueue
+    CREATE_PRODUCT_TOPIC_ARN:
+      Fn::GetAtt: [createProductTopic, TopicArn]
 
   iam:
     role:
@@ -30,6 +32,10 @@ provider:
           Resource:
             - Fn::GetAtt: [productsTable, Arn]
             - Fn::GetAtt: [stockTable, Arn]
+        - Effect: Allow
+          Action: sns:Publish
+          Resource:
+            Fn::GetAtt: [createProductTopic, TopicArn]
 
 functions:
   getProductsList:
@@ -90,6 +96,17 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: catalogItems
+    createProductTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: createProduct
+    emailSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        TopicArn:
+          Ref: createProductTopic
+        Protocol: email
+        Endpoint: Igor_Deriabin@epam.com
 
   Outputs:
     CatalogItemsQueueArn:
