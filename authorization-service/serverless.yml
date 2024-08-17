@@ -1,0 +1,25 @@
+service: authorization-service
+frameworkVersion: "3"
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  region: eu-central-1
+  httpApi:
+    cors: true
+  environment:
+    USER_DATA_STRING: ${env:USERNAME}:${env:PASSWORD}
+
+functions:
+  basicAuthorizer:
+    handler: handler.basicAuthorizer
+
+resources:
+  Outputs:
+    BasicAuthorizerLambdaFunctionArn:
+      Value:
+        Fn::GetAtt: [BasicAuthorizerLambdaFunction, Arn]
+      Export:
+        Name: BasicAuthorizerLambdaFunctionArn

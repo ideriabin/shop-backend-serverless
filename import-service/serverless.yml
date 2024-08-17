@@ -6,6 +6,9 @@ custom:
   bucketName: shop-backend-serverless-import
   bucketArn: arn:aws:s3:::${self:custom.bucketName}
   bucketPrefix: uploaded
+  authorizerArn:
+    Fn::ImportValue: BasicAuthorizerLambdaFunctionArn
+
 
 provider:
   name: aws
@@ -14,6 +17,11 @@ provider:
   region: eu-central-1
   httpApi:
     cors: true
+    authorizers:
+      basicAuthorizer:
+        type: request
+        functionArn: ${self:custom.authorizerArn}
+
   iam:
     role:
       statements:
@@ -30,7 +38,6 @@ provider:
     QUEUE_URL:
       Fn::ImportValue: CatalogItemsQueueUrl
 
-
 functions:
   importProductsFile:
     handler: handler.importProductsFile
@@ -38,6 +45,9 @@ functions:
       - httpApi:
           path: /import
           method: get
+          authorizer:
+            name: basicAuthorizer
+
   importFileParser:
     handler: handler.importFileParser
     events:
